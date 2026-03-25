@@ -69,6 +69,10 @@
     .qr-resolution { font-size: 11px; color: #AAA; margin-top: 4px; }
 
     .section-title { font-size: 18px; font-weight: 700; margin: 32px 0 16px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 32px 0 16px; flex-wrap: wrap; gap: 16px; }
+    .section-header .section-title { margin: 0; }
+    .search-bar { width: 100%; max-width: 320px; padding: 10px 14px; border: 1px solid #E5E5E5; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s; }
+    .search-bar:focus { border-color: #FF7A00; }
 
     .empty { text-align: center; padding: 40px; color: #999; }
   </style>
@@ -97,7 +101,10 @@
     </div>
   </div>
 
-  <h2 class="section-title">Participantes</h2>
+  <div class="section-header">
+    <h2 class="section-title">Participantes</h2>
+    <input type="text" id="searchInput" class="search-bar" placeholder="Buscar por nome, e-mail ou telefone..." oninput="filterData()">
+  </div>
   <table>
     <thead>
       <tr>
@@ -120,42 +127,58 @@
   </div>
 
   <script>
+    let allData = [];
+
     async function loadData() {
       try {
         const res = await fetch('/api/admin/participantes');
-        const data = await res.json();
+        allData = await res.json();
 
-        const tbody = document.getElementById('tableBody');
-        const winners = data.filter(d => d.is_winner);
-        const partial = data.filter(d => !d.is_winner);
+        // Stats (baseado no total de dados, independente do filtro)
+        const winners = allData.filter(d => d.is_winner);
+        const partial = allData.filter(d => !d.is_winner);
 
-        document.getElementById('totalParticipantes').textContent = data.length;
+        document.getElementById('totalParticipantes').textContent = allData.length;
         document.getElementById('totalWinners').textContent = winners.length;
         document.getElementById('totalPartial').textContent = partial.length;
 
-        if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum participante ainda.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = data.map(p => {
-          const qrs = p.qrs_scanned ? p.qrs_scanned.split(',').sort().join(', ') : '-';
-          const status = p.is_winner
-            ? '<span class="badge badge-winner">Ganhador</span>'
-            : `<span class="badge badge-partial">${p.total_scans}/3</span>`;
-          const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
-          return `<tr>
-            <td>${esc(p.nome)}</td>
-            <td>${esc(p.email)}</td>
-            <td>${esc(p.telefone)}</td>
-            <td>QR ${qrs}</td>
-            <td>${status}</td>
-            <td>${date}</td>
-          </tr>`;
-        }).join('');
+        // Renderiza aplicando a busca atual
+        filterData();
       } catch (e) {
         console.error(e);
       }
+    }
+
+    function filterData() {
+      const term = document.getElementById('searchInput').value.toLowerCase();
+      const tbody = document.getElementById('tableBody');
+
+      const filtered = allData.filter(p => 
+        (p.nome && p.nome.toLowerCase().includes(term)) || 
+        (p.email && p.email.toLowerCase().includes(term)) || 
+        (p.telefone && p.telefone.toLowerCase().includes(term))
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum participante encontrado.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        const qrs = p.qrs_scanned ? p.qrs_scanned.split(',').sort().join(', ') : '-';
+        const status = p.is_winner
+          ? '<span class="badge badge-winner">Ganhador</span>'
+          : `<span class="badge badge-partial">${p.total_scans}/3</span>`;
+        const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
+        return `<tr>
+          <td>${esc(p.nome)}</td>
+          <td>${esc(p.email)}</td>
+          <td>${esc(p.telefone)}</td>
+          <td>QR ${qrs}</td>
+          <td>${status}</td>
+          <td>${date}</td>
+        </tr>`;
+      }).join('');
     }
 
     function loadQRCodes() {
