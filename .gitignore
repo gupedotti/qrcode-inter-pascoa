@@ -5,3 +5,5 @@ database.sqlite-wal
 public/qrcodes/
 .vercel
 .env
+
+.vercel

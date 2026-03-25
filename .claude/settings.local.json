@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node server.js)",
+      "Bash(gh --version)",
+      "Bash(vercel --version)",
+      "Bash(turso db:*)",
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(npm install:*)",
+      "Bash(winget install:*)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" auth login --web)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" repo create qrcode-inter-pascoa --public --source=. --remote=origin --push)",
+      "Bash(npx vercel:*)"
+    ]
+  }
+}
