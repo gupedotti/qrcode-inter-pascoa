@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inter Café - Páscoa 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --inter-orange: #FF7A00;
+      --inter-dark: #1D1D1D;
+      --inter-gray: #6B6B6B;
+      --inter-light: #F5F5F5;
+      --inter-white: #FFFFFF;
+      --inter-green: #00AA4F;
+      --easter-purple: #8B5CF6;
+      --easter-pink: #EC4899;
+      --easter-yellow: #F59E0B;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--inter-light);
+      min-height: 100vh;
+      color: var(--inter-dark);
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0;
+      min-height: 100vh;
+      background: var(--inter-white);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .header {
+      background: var(--inter-orange);
+      padding: 24px 24px 32px;
+      text-align: center;
+      position: relative;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: var(--inter-orange);
+      border-radius: 0 0 50% 50%;
+    }
+
+    .logo {
+      height: 40px;
+      margin-bottom: 16px;
+      filter: brightness(0) invert(1);
+    }
+
+    .header h1 {
+      color: var(--inter-white);
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .header p {
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      margin-top: 8px;
+      font-weight: 400;
+    }
+
+    .easter-eggs {
+      font-size: 28px;
+      margin-top: 8px;
+    }
+
+    /* Content */
+    .content {
+      padding: 40px 24px 24px;
+    }
+
+    /* Progress Bar */
+    .progress-section {
+      margin-bottom: 28px;
+    }
+
+    .progress-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--inter-gray);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .progress-eggs {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .egg {
+      width: 80px;
+      height: 120px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      position: relative;
+      transition: all 0.4s ease;
+    }
+
+    .egg svg {
+      width: 80px;
+      height: 100px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+      transition: all 0.4s ease;
+    }
+
+    .egg .egg-fill {
+      fill: #E8E8E8;
+      transition: fill 0.4s ease;
+    }
+
+    .egg .egg-stroke {
+      fill: none;
+      stroke: #CCCCCC;
+      stroke-width: 2;
+      transition: all 0.4s ease;
+    }
+
+    .egg .egg-pattern {
+      opacity: 0.15;
+      transition: opacity 0.4s ease;
+    }
+
+    .egg.scanned {
+      transform: scale(1.1);
+      animation: eggPop 0.5s ease;
+    }
+
+    .egg.scanned svg {
+      filter: drop-shadow(0 4px 12px rgba(255, 122, 0, 0.4));
+    }
+
+    .egg.scanned .egg-fill {
+      fill: var(--inter-orange);
+    }
+
+    .egg.scanned .egg-stroke {
+      stroke: #E66E00;
+      stroke-width: 2.5;
+    }
+
+    .egg.scanned .egg-pattern {
+      opacity: 0.3;
+    }
+
+    .egg.scanned .egg-check {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .egg .egg-check {
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.3s ease 0.15s;
+    }
+
+    @keyframes eggPop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.2); }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1.1); }
+    }
+
+    .egg .egg-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--inter-gray);
+      position: absolute;
+      bottom: 0px;
+      transition: color 0.4s ease;
+    }
+
+    .egg.scanned .egg-number {
+      color: var(--inter-orange);
+    }
+
+    .progress-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--inter-gray);
+      font-weight: 500;
+    }
+
+    .progress-text strong {
+      color: var(--inter-orange);
+    }
+
+    /* QR Badge */
+    .qr-badge {
+      background: linear-gradient(135deg, #FFF3E6, #FFE8CC);
+      border: 2px solid var(--inter-orange);
+      border-radius: 12px;
+      padding: 12px 16px;
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--inter-dark);
+    }
+
+    .qr-badge span {
+      color: var(--inter-orange);
+    }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--inter-dark);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #E5E5E5;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s;
+      background: var(--inter-white);
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--inter-orange);
+      box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: var(--inter-orange);
+      color: var(--inter-white);
+    }
+
+    .btn-primary:hover {
+      background: #E66E00;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 122, 0, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Status check */
+    .status-link {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .status-link a {
+      display: block;
+      background: var(--inter-light);
+      border: 2px solid var(--inter-orange);
+      color: var(--inter-orange);
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      padding: 14px 20px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .status-link a:hover {
+      background: var(--inter-orange);
+      color: var(--inter-white);
+    }
+
+    /* Winner Screen */
+    .winner-screen {
+      display: none;
+      text-align: center;
+      padding: 40px 24px;
+    }
+
+    .winner-screen.active {
+      display: block;
+    }
+
+    .winner-trophy {
+      font-size: 80px;
+      margin-bottom: 16px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .winner-screen h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--inter-orange);
+      margin-bottom: 8px;
+    }
+
+    .winner-screen p {
+      color: var(--inter-gray);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .winner-coupon {
+      background: linear-gradient(135deg, var(--inter-orange), #FF9A3C);
+      color: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .winner-coupon::before,
+    .winner-coupon::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: var(--inter-white);
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .winner-coupon::before { left: -12px; }
+    .winner-coupon::after { right: -12px; }
+
+    .winner-coupon .coupon-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    .winner-coupon .coupon-code {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 8px 0;
+      letter-spacing: 3px;
+    }
+
+    .winner-coupon .coupon-desc {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    /* Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .message.success {
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      display: block;
+    }
+
+    .message.error {
+      background: #FEF2F2;
+      color: #991B1B;
+      border: 1px solid #FECACA;
+      display: block;
+    }
+
+    .message.info {
+      background: #FFF7ED;
+      color: #9A3412;
+      border: 1px solid #FED7AA;
+      display: block;
+    }
+
+    /* Status Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #E5E5E5;
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 12px;
+    }
+
+    .modal input:focus {
+      outline: none;
+      border-color: var(--inter-orange);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .modal-buttons .btn {
+      flex: 1;
+      padding: 12px;
+      font-size: 14px;
+    }
+
+    .btn-secondary {
+      background: var(--inter-light);
+      color: var(--inter-dark);
+    }
+
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #AAAAAA;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <img src="https://central-imagens.bancointer.com.br/images-without-small-versions/hero-logo-inter-cafe/image.webp"
+           alt="Inter Café" class="logo" onerror="this.style.display='none'">
+      <h1>Caça aos Ovos de Páscoa</h1>
+      <p>Encontre os 3 QR Codes e ganhe um prêmio especial!</p>
+      <div class="easter-eggs">🥚🐰🥚</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Progress -->
+      <div class="progress-section">
+        <div class="progress-title">Seu progresso</div>
+        <div class="progress-eggs">
+          <div class="egg" id="egg1">
+            <svg viewBox="0 0 60 80">
+              <ellipse class="egg-fill" cx="30" cy="42" rx="26" ry="34"/>
+              <ellipse class="egg-stroke" cx="30" cy="42" rx="26" ry="34"/>
+              <line class="egg-pattern" x1="8" y1="32" x2="52" y2="32" stroke="#FFF" stroke-width="3"/>
+              <line class="egg-pattern" x1="6" y1="42" x2="54" y2="42" stroke="#FFF" stroke-width="2"/>
+              <line class="egg-pattern" x1="8" y1="52" x2="52" y2="52" stroke="#FFF" stroke-width="3"/>
+              <circle class="egg-pattern" cx="20" cy="37" r="3" fill="#FFF"/>
+              <circle class="egg-pattern" cx="40" cy="37" r="3" fill="#FFF"/>
+              <circle class="egg-pattern" cx="30" cy="47" r="3" fill="#FFF"/>
+              <g class="egg-check">
+                <circle cx="30" cy="42" r="12" fill="rgba(255,255,255,0.9)"/>
+                <path d="M23 42 L28 47 L38 37" fill="none" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </svg>
+            <span class="egg-number">QR 1</span>
+          </div>
+          <div class="egg" id="egg2">
+            <svg viewBox="0 0 60 80">
+              <ellipse class="egg-fill" cx="30" cy="42" rx="26" ry="34"/>
+              <ellipse class="egg-stroke" cx="30" cy="42" rx="26" ry="34"/>
+              <path class="egg-pattern" d="M10 35 Q20 28 30 35 Q40 42 50 35" fill="none" stroke="#FFF" stroke-width="3"/>
+              <path class="egg-pattern" d="M10 47 Q20 40 30 47 Q40 54 50 47" fill="none" stroke="#FFF" stroke-width="3"/>
+              <circle class="egg-pattern" cx="18" cy="42" r="2.5" fill="#FFF"/>
+              <circle class="egg-pattern" cx="30" cy="42" r="2.5" fill="#FFF"/>
+              <circle class="egg-pattern" cx="42" cy="42" r="2.5" fill="#FFF"/>
+              <g class="egg-check">
+                <circle cx="30" cy="42" r="12" fill="rgba(255,255,255,0.9)"/>
+                <path d="M23 42 L28 47 L38 37" fill="none" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </svg>
+            <span class="egg-number">QR 2</span>
+          </div>
+          <div class="egg" id="egg3">
+            <svg viewBox="0 0 60 80">
+              <ellipse class="egg-fill" cx="30" cy="42" rx="26" ry="34"/>
+              <ellipse class="egg-stroke" cx="30" cy="42" rx="26" ry="34"/>
+              <rect class="egg-pattern" x="14" y="30" width="32" height="6" rx="3" fill="#FFF"/>
+              <rect class="egg-pattern" x="14" y="44" width="32" height="6" rx="3" fill="#FFF"/>
+              <circle class="egg-pattern" cx="22" cy="39" r="2" fill="#FFF"/>
+              <circle class="egg-pattern" cx="30" cy="39" r="2" fill="#FFF"/>
+              <circle class="egg-pattern" cx="38" cy="39" r="2" fill="#FFF"/>
+              <g class="egg-check">
+                <circle cx="30" cy="42" r="12" fill="rgba(255,255,255,0.9)"/>
+                <path d="M23 42 L28 47 L38 37" fill="none" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </svg>
+            <span class="egg-number">QR 3</span>
+          </div>
+        </div>
+        <div class="progress-text" id="progressText">Escaneie um QR Code para começar!</div>
+      </div>
+
+      <!-- QR Badge (shown when coming from QR scan) -->
+      <div class="qr-badge" id="qrBadge" style="display:none;">
+        Você escaneou o <span id="qrBadgeNumber">QR Code 1</span>!
+      </div>
+
+
+      <!-- Form -->
+      <div id="formSection">
+        <div class="form-group">
+          <label for="nome">Nome completo</label>
+          <input type="text" id="nome" placeholder="Seu nome" autocomplete="name">
+        </div>
+
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone</label>
+          <input type="tel" id="telefone" placeholder="(11) 99999-9999" autocomplete="tel">
+        </div>
+
+        <button class="btn btn-primary" id="btnSubmit" onclick="submitForm()">
+          Registrar QR Code
+        </button>
+
+        <div class="message" id="message"></div>
+
+        <div class="status-link">
+          <a href="#" onclick="openStatusModal(); return false;">Já participou? Verifique seu progresso</a>
+        </div>
+      </div>
+
+      <!-- Winner Screen -->
+      <div class="winner-screen" id="winnerScreen">
+        <div class="winner-trophy">🏆</div>
+        <h2>Parabéns!</h2>
+        <p>Você encontrou todos os 3 ovos de Páscoa!</p>
+        <div class="winner-coupon">
+          <div class="coupon-label">Seu cupom de prêmio</div>
+          <div class="coupon-code">PASCOA2026</div>
+          <div class="coupon-desc">Apresente este cupom no balcão Inter Café</div>
+        </div>
+        <p style="font-size:13px; color:#999;">Tire um print desta tela para garantir seu prêmio!</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      Inter Café &copy; 2026 — Campanha de Páscoa
+    </div>
+  </div>
+
+  <!-- Status Modal -->
+  <div class="modal-overlay" id="statusModal">
+    <div class="modal">
+      <h3>Verificar progresso</h3>
+      <input type="email" id="statusEmail" placeholder="Digite seu e-mail">
+      <div class="message" id="statusMessage"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" onclick="closeStatusModal()">Fechar</button>
+        <button class="btn btn-primary" onclick="checkStatus()">Verificar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get QR code from URL
+    let currentQR = null;
+    const pathMatch = window.location.pathname.match(/\/scan\/(\d)/);
+    if (pathMatch) {
+      currentQR = parseInt(pathMatch[1]);
+    }
+
+    // Load saved data
+    const savedName = localStorage.getItem('ic_nome') || '';
+    const savedEmail = localStorage.getItem('ic_email') || '';
+    const savedPhone = localStorage.getItem('ic_telefone') || '';
+
+    if (savedName) document.getElementById('nome').value = savedName;
+    if (savedEmail) document.getElementById('email').value = savedEmail;
+    if (savedPhone) document.getElementById('telefone').value = savedPhone;
+
+    // Show/hide QR badge
+    if (currentQR) {
+      document.getElementById('qrBadge').style.display = 'block';
+      document.getElementById('qrBadgeNumber').textContent = `QR Code ${currentQR}`;
+    } else {
+      document.getElementById('qrBadge').style.display = 'none';
+      document.getElementById('btnSubmit').disabled = true;
+      document.getElementById('btnSubmit').textContent = 'Escaneie um QR Code primeiro';
+    }
+
+    // Auto-check progress if email is saved
+    if (savedEmail) {
+      loadProgress(savedEmail);
+    }
+
+    async function loadProgress(email) {
+      try {
+        const res = await fetch(`/api/status/${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data.found) {
+          updateEggs(data.scans);
+          if (data.is_winner) {
+            showWinnerScreen();
+          }
+        }
+      } catch (e) { /* silent */ }
+    }
+
+    function updateEggs(scans) {
+      for (let i = 1; i <= 3; i++) {
+        const egg = document.getElementById(`egg${i}`);
+        if (scans.includes(i)) {
+          egg.classList.add('scanned');
+        } else {
+          egg.classList.remove('scanned');
+        }
+      }
+      const text = document.getElementById('progressText');
+      if (scans.length === 0) {
+        text.textContent = 'Escaneie um QR Code para começar!';
+      } else if (scans.length === 3) {
+        text.innerHTML = '<strong>Todos encontrados!</strong> 🎉';
+      } else {
+        text.innerHTML = `<strong>${scans.length}/3</strong> QR Codes encontrados — faltam ${3 - scans.length}!`;
+      }
+    }
+
+    function showWinnerScreen() {
+      document.getElementById('formSection').style.display = 'none';
+      document.getElementById('winnerScreen').classList.add('active');
+      updateEggs([1, 2, 3]);
+    }
+
+    // Phone mask
+    document.getElementById('telefone').addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 6) {
+        v = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`;
+      } else if (v.length > 2) {
+        v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+      } else if (v.length > 0) {
+        v = `(${v}`;
+      }
+      e.target.value = v;
+    });
+
+    async function submitForm() {
+      const nome = document.getElementById('nome').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const telefone = document.getElementById('telefone').value.trim();
+      const msgEl = document.getElementById('message');
+
+      if (!nome || !email || !telefone) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Preencha todos os campos!';
+        return;
+      }
+
+      if (!email.includes('@')) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'E-mail inválido!';
+        return;
+      }
+
+      if (!currentQR) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Você precisa escanear um QR Code válido!';
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.textContent = 'Registrando...';
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nome, email, telefone, qr_code: currentQR })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          // Save to localStorage
+          localStorage.setItem('ic_nome', nome);
+          localStorage.setItem('ic_email', email);
+          localStorage.setItem('ic_telefone', telefone);
+
+          updateEggs(data.scans);
+
+          if (data.is_complete || data.already_winner) {
+            showWinnerScreen();
+          } else {
+            msgEl.className = 'message success';
+            msgEl.textContent = data.message;
+            btn.textContent = 'QR Code registrado! ✓';
+          }
+        } else {
+          msgEl.className = 'message error';
+          msgEl.textContent = data.error || 'Erro ao registrar';
+          btn.disabled = false;
+          btn.textContent = 'Registrar QR Code';
+        }
+      } catch (err) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Erro de conexão. Tente novamente.';
+        btn.disabled = false;
+        btn.textContent = 'Registrar QR Code';
+      }
+    }
+
+    function openStatusModal() {
+      const modal = document.getElementById('statusModal');
+      modal.classList.add('active');
+      const saved = localStorage.getItem('ic_email');
+      if (saved) document.getElementById('statusEmail').value = saved;
+    }
+
+    function closeStatusModal() {
+      document.getElementById('statusModal').classList.remove('active');
+      document.getElementById('statusMessage').className = 'message';
+    }
+
+    async function checkStatus() {
+      const email = document.getElementById('statusEmail').value.trim();
+      const msgEl = document.getElementById('statusMessage');
+
+      if (!email) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Digite seu e-mail';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/status/${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (!data.found) {
+          msgEl.className = 'message info';
+          msgEl.textContent = 'E-mail não encontrado. Escaneie um QR Code para começar!';
+        } else if (data.is_winner) {
+          closeStatusModal();
+          localStorage.setItem('ic_email', email);
+          localStorage.setItem('ic_nome', data.nome);
+          showWinnerScreen();
+        } else {
+          const missing = [1,2,3].filter(n => !data.scans.includes(n));
+          msgEl.className = 'message success';
+          msgEl.textContent = `${data.nome}, você tem ${data.total}/3 QR Codes. Faltam: QR ${missing.join(', QR ')}`;
+          updateEggs(data.scans);
+          localStorage.setItem('ic_email', email);
+          localStorage.setItem('ic_nome', data.nome);
+        }
+      } catch (err) {
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Erro de conexão.';
+      }
+    }
+
+    // Enter key on modal
+    document.getElementById('statusEmail').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkStatus();
+    });
+  </script>
+</body>
+</html>

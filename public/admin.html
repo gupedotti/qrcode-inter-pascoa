@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Inter Café Páscoa</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #F5F5F5; color: #1D1D1D; padding: 24px; }
+
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+    }
+    h1 { font-size: 24px; color: #FF7A00; }
+
+    .stats {
+      display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: white; border-radius: 12px; padding: 20px; flex: 1; min-width: 150px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-card .number { font-size: 32px; font-weight: 800; color: #FF7A00; }
+    .stat-card .label { font-size: 13px; color: #6B6B6B; margin-top: 4px; }
+
+    .btn {
+      padding: 10px 20px; border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-orange { background: #FF7A00; color: white; }
+    .btn-orange:hover { background: #E66E00; }
+    .btn-gray { background: #E5E5E5; color: #1D1D1D; }
+
+    table {
+      width: 100%; background: white; border-radius: 12px;
+      overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-collapse: collapse;
+    }
+    th { background: #1D1D1D; color: white; padding: 12px 16px; text-align: left; font-size: 13px; }
+    td { padding: 12px 16px; border-bottom: 1px solid #F0F0F0; font-size: 14px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #FAFAFA; }
+
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+    }
+    .badge-winner { background: #ECFDF5; color: #065F46; }
+    .badge-partial { background: #FFF7ED; color: #9A3412; }
+
+    .qr-grid { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; }
+    .qr-card {
+      background: white; border-radius: 12px; padding: 20px; text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .qr-card img { width: 200px; height: 200px; border-radius: 8px; }
+    .qr-card p { margin-top: 8px; font-size: 13px; color: #6B6B6B; word-break: break-all; }
+    .qr-card .qr-title { font-weight: 700; font-size: 16px; color: #FF7A00; margin-bottom: 8px; }
+    .btn-download {
+      display: inline-block; margin-top: 12px; padding: 10px 20px;
+      background: #FF7A00; color: white; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 13px;
+      transition: background 0.2s;
+    }
+    .btn-download:hover { background: #E66E00; }
+    .qr-resolution { font-size: 11px; color: #AAA; margin-top: 4px; }
+
+    .section-title { font-size: 18px; font-weight: 700; margin: 32px 0 16px; }
+
+    .empty { text-align: center; padding: 40px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🐰 Admin — Inter Café Páscoa</h1>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-orange" onclick="exportCSV()">Exportar XLS</button>
+      <button class="btn btn-gray" onclick="loadData()">Atualizar</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="number" id="totalParticipantes">0</div>
+      <div class="label">Participantes</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="totalWinners">0</div>
+      <div class="label">Ganhadores</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="totalPartial">0</div>
+      <div class="label">Em andamento</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Participantes</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Telefone</th>
+        <th>QR Codes</th>
+        <th>Status</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr><td colspan="6" class="empty">Carregando...</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="section-title">QR Codes para impressão</h2>
+  <div class="qr-grid" id="qrGrid">
+    <p style="color:#999;">Carregando QR Codes...</p>
+  </div>
+
+  <script>
+    async function loadData() {
+      try {
+        const res = await fetch('/api/admin/participantes');
+        const data = await res.json();
+
+        const tbody = document.getElementById('tableBody');
+        const winners = data.filter(d => d.is_winner);
+        const partial = data.filter(d => !d.is_winner);
+
+        document.getElementById('totalParticipantes').textContent = data.length;
+        document.getElementById('totalWinners').textContent = winners.length;
+        document.getElementById('totalPartial').textContent = partial.length;
+
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum participante ainda.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.map(p => {
+          const qrs = p.qrs_scanned ? p.qrs_scanned.split(',').sort().join(', ') : '-';
+          const status = p.is_winner
+            ? '<span class="badge badge-winner">Ganhador</span>'
+            : `<span class="badge badge-partial">${p.total_scans}/3</span>`;
+          const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
+          return `<tr>
+            <td>${esc(p.nome)}</td>
+            <td>${esc(p.email)}</td>
+            <td>${esc(p.telefone)}</td>
+            <td>QR ${qrs}</td>
+            <td>${status}</td>
+            <td>${date}</td>
+          </tr>`;
+        }).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadQRCodes() {
+      try {
+        const res = await fetch('/api/generate-qrcodes');
+        const data = await res.json();
+
+        if (data.success) {
+          const grid = document.getElementById('qrGrid');
+          grid.innerHTML = data.qrcodes.map(qr => `
+            <div class="qr-card">
+              <div class="qr-title">QR Code ${qr.qr}</div>
+              <img src="${qr.file}?t=${Date.now()}" alt="QR Code ${qr.qr}">
+              <div class="qr-resolution">1200 x 1200px (alta resolução)</div>
+              <p>${qr.url}</p>
+              <a class="btn-download" href="${qr.file}" download="QRCode_InterCafe_${qr.qr}.png">Baixar PNG HD</a>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.error('Erro ao carregar QR Codes', e);
+      }
+    }
+
+    function exportCSV() {
+      window.location.href = '/api/admin/export';
+    }
+
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    loadData();
+    loadQRCodes();
+    // Auto-refresh every 10s
+    setInterval(loadData, 10000);
+  </script>
+</body>
+</html>
