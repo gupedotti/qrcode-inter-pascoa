@@ -158,26 +158,18 @@
       }
     }
 
-    async function loadQRCodes() {
-      try {
-        const res = await fetch('/api/generate-qrcodes');
-        const data = await res.json();
-
-        if (data.success) {
-          const grid = document.getElementById('qrGrid');
-          grid.innerHTML = data.qrcodes.map(qr => `
-            <div class="qr-card">
-              <div class="qr-title">QR Code ${qr.qr}</div>
-              <img src="${qr.file}?t=${Date.now()}" alt="QR Code ${qr.qr}">
-              <div class="qr-resolution">1200 x 1200px (alta resolução)</div>
-              <p>${qr.url}</p>
-              <a class="btn-download" href="${qr.file}" download="QRCode_InterCafe_${qr.qr}.png">Baixar PNG HD</a>
-            </div>
-          `).join('');
-        }
-      } catch (e) {
-        console.error('Erro ao carregar QR Codes', e);
-      }
+    function loadQRCodes() {
+      const BASE = 'https://qrcode-inter-pascoa.vercel.app';
+      const grid = document.getElementById('qrGrid');
+      grid.innerHTML = [1, 2, 3].map(i => `
+        <div class="qr-card">
+          <div class="qr-title">QR Code ${i}</div>
+          <img src="/qrcodes/qr${i}.png" alt="QR Code ${i}">
+          <div class="qr-resolution">1200 x 1200px (alta resolução)</div>
+          <p>${BASE}/scan/${i}</p>
+          <a class="btn-download" href="/qrcodes/qr${i}.png" download="QRCode_InterCafe_${i}.png">Baixar PNG HD</a>
+        </div>
+      `).join('');
     }
 
     function exportCSV() {

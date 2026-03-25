@@ -1,8 +1,6 @@
 const express = require('express');
 const { createClient } = require('@libsql/client');
-const QRCode = require('qrcode');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +41,22 @@ async function initDB() {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Init DB on startup
+const dbReady = initDB().catch(e => {
+  console.error('Erro ao inicializar banco:', e);
+});
+
+// Ensure DB is ready before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await dbReady;
+    next();
+  } catch (e) {
+    console.error('DB not ready:', e);
+    res.status(500).json({ error: 'Database not available' });
+  }
+});
 
 // Landing page
 app.get('/', (req, res) => {
@@ -175,32 +189,7 @@ app.get('/api/admin/participantes', async (req, res) => {
   }
 });
 
-// Generate QR Codes
-app.get('/api/generate-qrcodes', async (req, res) => {
-  try {
-    const qrDir = path.join(__dirname, 'public', 'qrcodes');
-    if (!fs.existsSync(qrDir)) {
-      fs.mkdirSync(qrDir, { recursive: true });
-    }
 
-    const results = [];
-    for (let i = 1; i <= 3; i++) {
-      const url = `${BASE_URL}/scan/${i}`;
-      const filePath = path.join(qrDir, `qr${i}.png`);
-      await QRCode.toFile(filePath, url, {
-        width: 1200,
-        margin: 2,
-        color: { dark: '#000000', light: '#FFFFFF' }
-      });
-      results.push({ qr: i, url, file: `/qrcodes/qr${i}.png` });
-    }
-
-    res.json({ success: true, qrcodes: results });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Erro ao gerar QR Codes' });
-  }
-});
 
 // Export participants as CSV
 app.get('/api/admin/export', async (req, res) => {
@@ -240,17 +229,6 @@ app.get('/api/admin/export', async (req, res) => {
   }
 });
 
-// Init DB on startup
-const dbReady = initDB().catch(e => {
-  console.error('Erro ao inicializar banco:', e);
-  process.exit(1);
-});
-
-// Ensure DB is ready before handling requests
-app.use(async (req, res, next) => {
-  await dbReady;
-  next();
-});
 
 // Start server (local dev only, Vercel uses the export)
 if (!process.env.VERCEL) {
