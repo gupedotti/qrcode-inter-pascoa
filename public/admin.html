@@ -75,6 +75,20 @@
     .search-bar:focus { border-color: #FF7A00; }
 
     .empty { text-align: center; padding: 40px; color: #999; }
+
+    .btn-check {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border: 2px solid #E5E5E5; border-radius: 20px;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      background: white; color: #6B6B6B;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-check:hover { border-color: #22C55E; color: #15803D; }
+    .btn-check.checked {
+      background: #ECFDF5; border-color: #22C55E; color: #065F46;
+    }
+    .btn-check .icon { font-size: 14px; }
   </style>
 </head>
 <body>
@@ -99,6 +113,10 @@
       <div class="number" id="totalPartial">0</div>
       <div class="label">Em andamento</div>
     </div>
+    <div class="stat-card">
+      <div class="number" id="totalRetirados">0</div>
+      <div class="label">Prêmios Retirados</div>
+    </div>
   </div>
 
   <div class="section-header">
@@ -113,11 +131,12 @@
         <th>Telefone</th>
         <th>QR Codes</th>
         <th>Status</th>
+        <th>Prêmio Retirado</th>
         <th>Data</th>
       </tr>
     </thead>
     <tbody id="tableBody">
-      <tr><td colspan="6" class="empty">Carregando...</td></tr>
+      <tr><td colspan="7" class="empty">Carregando...</td></tr>
     </tbody>
   </table>
 
@@ -137,10 +156,12 @@
         // Stats (baseado no total de dados, independente do filtro)
         const winners = allData.filter(d => d.is_winner);
         const partial = allData.filter(d => !d.is_winner);
+        const retirados = allData.filter(d => d.premio_retirado);
 
         document.getElementById('totalParticipantes').textContent = allData.length;
         document.getElementById('totalWinners').textContent = winners.length;
         document.getElementById('totalPartial').textContent = partial.length;
+        document.getElementById('totalRetirados').textContent = retirados.length;
 
         // Renderiza aplicando a busca atual
         filterData();
@@ -160,7 +181,7 @@
       );
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty">Nenhum participante encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum participante encontrado.</td></tr>';
         return;
       }
 
@@ -170,12 +191,25 @@
           ? '<span class="badge badge-winner">Ganhador</span>'
           : `<span class="badge badge-partial">${p.total_scans}/3</span>`;
         const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
+
+        let premioCell = '-';
+        if (p.is_winner) {
+          const checked = p.premio_retirado ? 'checked' : '';
+          const label = p.premio_retirado ? '✅ Retirado' : '⬜ Pendente';
+          premioCell = `<button
+            class="btn-check ${p.premio_retirado ? 'checked' : ''}"
+            onclick="togglePremio('${esc(p.email)}', ${p.premio_retirado ? 0 : 1}, this)"
+            title="${p.premio_retirado ? 'Clique para desmarcar' : 'Clique para confirmar retirada'}"
+          ><span class="icon">${p.premio_retirado ? '✅' : '⬜'}</span>${p.premio_retirado ? 'Retirado' : 'Pendente'}</button>`;
+        }
+
         return `<tr>
           <td>${esc(p.nome)}</td>
           <td>${esc(p.email)}</td>
           <td>${esc(p.telefone)}</td>
           <td>QR ${qrs}</td>
           <td>${status}</td>
+          <td>${premioCell}</td>
           <td>${date}</td>
         </tr>`;
       }).join('');
@@ -197,6 +231,33 @@
 
     function exportCSV() {
       window.location.href = '/api/admin/export';
+    }
+
+    async function togglePremio(email, novoValor, btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      try {
+        const res = await fetch('/api/admin/premio-retirado', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, retirado: novoValor === 1 })
+        });
+        if (res.ok) {
+          // Update local data and re-render
+          const p = allData.find(x => x.email === email);
+          if (p) p.premio_retirado = novoValor;
+          filterData();
+          // Update stat
+          document.getElementById('totalRetirados').textContent =
+            allData.filter(d => d.premio_retirado).length;
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Erro ao atualizar. Tente novamente.');
+      } finally {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
     }
 
     function esc(s) {

@@ -33,9 +33,19 @@ async function initDB() {
     CREATE TABLE IF NOT EXISTS winners (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL UNIQUE,
-      won_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      won_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      premio_retirado INTEGER DEFAULT 0,
+      premio_retirado_at DATETIME
     );
   `);
+
+  // Migrate: add premio_retirado if not exists (idempotent)
+  try {
+    await db.execute(`ALTER TABLE winners ADD COLUMN premio_retirado INTEGER DEFAULT 0`);
+  } catch (_) { /* column already exists */ }
+  try {
+    await db.execute(`ALTER TABLE winners ADD COLUMN premio_retirado_at DATETIME`);
+  } catch (_) { /* column already exists */ }
 }
 
 app.use(express.json());
@@ -175,7 +185,9 @@ app.get('/api/admin/participantes', async (req, res) => {
       SELECT p.nome, p.email, p.telefone, p.created_at,
         GROUP_CONCAT(s.qr_code) as qrs_scanned,
         COUNT(s.qr_code) as total_scans,
-        CASE WHEN w.email IS NOT NULL THEN 1 ELSE 0 END as is_winner
+        CASE WHEN w.email IS NOT NULL THEN 1 ELSE 0 END as is_winner,
+        COALESCE(w.premio_retirado, 0) as premio_retirado,
+        w.premio_retirado_at
       FROM participantes p
       LEFT JOIN scans s ON p.email = s.email
       LEFT JOIN winners w ON p.email = w.email
@@ -183,6 +195,25 @@ app.get('/api/admin/participantes', async (req, res) => {
       ORDER BY p.created_at DESC
     `);
     res.json(result.rows);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Erro interno' });
+  }
+});
+
+// Mark/unmark prize as collected
+app.post('/api/admin/premio-retirado', async (req, res) => {
+  try {
+    const { email, retirado } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email obrigatório' });
+    const emailNorm = email.trim().toLowerCase();
+    const val = retirado ? 1 : 0;
+    const now = retirado ? new Date().toISOString().replace('T', ' ').substring(0, 19) : null;
+    await db.execute({
+      sql: 'UPDATE winners SET premio_retirado = ?, premio_retirado_at = ? WHERE email = ?',
+      args: [val, now, emailNorm]
+    });
+    res.json({ success: true, email: emailNorm, premio_retirado: val });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Erro interno' });
@@ -198,7 +229,9 @@ app.get('/api/admin/export', async (req, res) => {
       SELECT p.nome, p.email, p.telefone, p.created_at,
         GROUP_CONCAT(s.qr_code) as qrs_scanned,
         COUNT(s.qr_code) as total_scans,
-        CASE WHEN w.email IS NOT NULL THEN 1 ELSE 0 END as is_winner
+        CASE WHEN w.email IS NOT NULL THEN 1 ELSE 0 END as is_winner,
+        COALESCE(w.premio_retirado, 0) as premio_retirado,
+        w.premio_retirado_at
       FROM participantes p
       LEFT JOIN scans s ON p.email = s.email
       LEFT JOIN winners w ON p.email = w.email
@@ -208,12 +241,14 @@ app.get('/api/admin/export', async (req, res) => {
     const rows = result.rows;
 
     const BOM = '\uFEFF';
-    const header = 'Nome;Email;Telefone;QR Codes;Status;Data';
+    const header = 'Nome;Email;Telefone;QR Codes;Status;Prêmio Retirado;Data Retirada;Data';
     const csvRows = rows.map(p => {
       const qrs = p.qrs_scanned ? p.qrs_scanned.split(',').sort().join(', ') : '-';
       const status = p.is_winner ? 'Ganhador' : `${p.total_scans}/3`;
       const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
-      return [p.nome, p.email, p.telefone, `QR ${qrs}`, status, date]
+      const premioRetirado = p.premio_retirado ? 'Sim' : (p.is_winner ? 'Não' : '-');
+      const dataRetirada = p.premio_retirado_at ? new Date(p.premio_retirado_at + 'Z').toLocaleString('pt-BR') : '-';
+      return [p.nome, p.email, p.telefone, `QR ${qrs}`, status, premioRetirado, dataRetirada, date]
         .map(v => `"${(v || '').replace(/"/g, '""')}"`)
         .join(';');
     });
