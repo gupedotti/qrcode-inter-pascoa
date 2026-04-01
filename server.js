@@ -174,12 +174,26 @@ app.get('/api/status/:email', async (req, res) => {
   }
 });
 
-// Admin panel
+// ====== ADMIN AUTH MIDDLEWARE ======
+// Valida se o cabeçalho Authorization está presente e contém as credenciais
+const adminAuth = (req, res, next) => {
+  const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
+  const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+
+  if (login === 'unobvious' && password === 'unobvious') {
+    return next();
+  }
+
+  res.status(401).json({ error: 'Acesso negado' });
+};
+
+// Admin panel (o index HTML é público para exibir o form de login, mas as APIs são restritas)
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-app.get('/api/admin/participantes', async (req, res) => {
+// APIs restritas:
+app.get('/api/admin/participantes', adminAuth, async (req, res) => {
   try {
     const result = await db.execute(`
       SELECT p.nome, p.email, p.telefone, p.created_at,
@@ -202,7 +216,7 @@ app.get('/api/admin/participantes', async (req, res) => {
 });
 
 // Mark/unmark prize as collected
-app.post('/api/admin/premio-retirado', async (req, res) => {
+app.post('/api/admin/premio-retirado', adminAuth, async (req, res) => {
   try {
     const { email, retirado } = req.body;
     if (!email) return res.status(400).json({ error: 'Email obrigatório' });
@@ -223,7 +237,7 @@ app.post('/api/admin/premio-retirado', async (req, res) => {
 
 
 // Export participants as CSV
-app.get('/api/admin/export', async (req, res) => {
+app.get('/api/admin/export', adminAuth, async (req, res) => {
   try {
     const result = await db.execute(`
       SELECT p.nome, p.email, p.telefone, p.created_at,

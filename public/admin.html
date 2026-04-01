@@ -33,6 +33,39 @@
     .btn-orange { background: #FF7A00; color: white; }
     .btn-orange:hover { background: #E66E00; }
     .btn-gray { background: #E5E5E5; color: #1D1D1D; }
+    .btn-gray:hover { background: #D4D4D4; }
+
+    /* ── Filters ── */
+    .filters-box {
+      background: white; border-radius: 12px; padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+    }
+    .filter-group {
+      display: flex; flex-direction: column; gap: 4px; min-width: 160px;
+    }
+    .filter-group label {
+      font-size: 11px; font-weight: 600; color: #6B6B6B; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .filter-group input,
+    .filter-group select {
+      padding: 9px 12px; border: 1px solid #E5E5E5; border-radius: 8px;
+      font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+      background: white; color: #1D1D1D; transition: border-color 0.2s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus { border-color: #FF7A00; }
+    .btn-clear {
+      padding: 9px 16px; border: 1px solid #E5E5E5; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+      background: #F5F5F5; color: #6B6B6B; transition: all 0.2s; align-self: flex-end;
+    }
+    .btn-clear:hover { background: #FFE8D6; border-color: #FF7A00; color: #FF7A00; }
+    .filter-count {
+      font-size: 12px; color: #6B6B6B; align-self: flex-end;
+      padding-bottom: 10px;
+    }
+    .filter-count span { font-weight: 700; color: #FF7A00; }
 
     table {
       width: 100%; background: white; border-radius: 12px;
@@ -89,9 +122,30 @@
       background: #ECFDF5; border-color: #22C55E; color: #065F46;
     }
     .btn-check .icon { font-size: 14px; }
+
+    /* QR pill tags */
+    .qr-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+    .qr-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%;
+      font-size: 11px; font-weight: 700; color: white;
+      background: #FF7A00;
+    }
+    .qr-pill.missing { background: #E5E5E5; color: #999; }
   </style>
 </head>
 <body>
+  <!-- ── LOGIN OVERLAY ── -->
+  <div id="loginOverlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #F5F5F5; z-index: 9999; display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; text-align: center;">
+      <h2 style="margin-bottom: 24px; color: #1D1D1D; font-size: 22px;">🔒 Login Admin</h2>
+      <input type="text" id="loginUser" placeholder="Usuário" style="width: 100%; padding: 12px 16px; margin-bottom: 12px; border: 1px solid #E5E5E5; border-radius: 8px; outline: none; font-size: 14px; font-family: 'Inter', sans-serif;">
+      <input type="password" id="loginPass" placeholder="Senha" style="width: 100%; padding: 12px 16px; margin-bottom: 24px; border: 1px solid #E5E5E5; border-radius: 8px; outline: none; font-size: 14px; font-family: 'Inter', sans-serif;">
+      <button class="btn btn-orange" style="width: 100%; padding: 12px; font-size: 15px;" onclick="doLogin()">Entrar</button>
+      <p id="loginError" style="color: #DC2626; margin-top: 16px; font-size: 13px; font-weight: 500; display: none;">Credenciais incorretas.</p>
+    </div>
+  </div>
+
   <div class="header">
     <h1>🐰 Admin — Inter Café Páscoa</h1>
     <div style="display:flex; gap:8px;">
@@ -100,6 +154,7 @@
     </div>
   </div>
 
+  <!-- linha 1: totais gerais -->
   <div class="stats">
     <div class="stat-card">
       <div class="number" id="totalParticipantes">0</div>
@@ -107,7 +162,7 @@
     </div>
     <div class="stat-card">
       <div class="number" id="totalWinners">0</div>
-      <div class="label">Ganhadores</div>
+      <div class="label">Ganhadores 🏆</div>
     </div>
     <div class="stat-card">
       <div class="number" id="totalPartial">0</div>
@@ -115,8 +170,99 @@
     </div>
     <div class="stat-card">
       <div class="number" id="totalRetirados">0</div>
-      <div class="label">Prêmios Retirados</div>
+      <div class="label">Prêmios Retirados 🎁</div>
     </div>
+  </div>
+  <!-- linha 2: scans por QR -->
+  <div class="stats" style="margin-bottom:8px;">
+    <div class="stat-card">
+      <div class="number" id="totalQR1">0</div>
+      <div class="label">Scans QR 1</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="totalQR2">0</div>
+      <div class="label">Scans QR 2</div>
+    </div>
+    <div class="stat-card">
+      <div class="number" id="totalQR3">0</div>
+      <div class="label">Scans QR 3</div>
+    </div>
+  </div>
+
+  <!-- ── FILTERS ── -->
+  <div class="filters-box">
+    <!-- Filtro por data (de) -->
+    <div class="filter-group">
+      <label>📅 Data — De</label>
+      <input type="date" id="filterDateFrom" onchange="filterData()">
+    </div>
+    <!-- Filtro por data (até) -->
+    <div class="filter-group">
+      <label>📅 Data — Até</label>
+      <input type="date" id="filterDateTo" onchange="filterData()">
+    </div>
+    <!-- Filtro por hora -->
+    <div class="filter-group">
+      <label>🕐 Hora — De</label>
+      <select id="filterHourFrom" onchange="filterData()">
+        <option value="">Qualquer</option>
+        <option value="0">00h</option><option value="1">01h</option><option value="2">02h</option>
+        <option value="3">03h</option><option value="4">04h</option><option value="5">05h</option>
+        <option value="6">06h</option><option value="7">07h</option><option value="8">08h</option>
+        <option value="9">09h</option><option value="10">10h</option><option value="11">11h</option>
+        <option value="12">12h</option><option value="13">13h</option><option value="14">14h</option>
+        <option value="15">15h</option><option value="16">16h</option><option value="17">17h</option>
+        <option value="18">18h</option><option value="19">19h</option><option value="20">20h</option>
+        <option value="21">21h</option><option value="22">22h</option><option value="23">23h</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>🕐 Hora — Até</label>
+      <select id="filterHourTo" onchange="filterData()">
+        <option value="">Qualquer</option>
+        <option value="0">00h</option><option value="1">01h</option><option value="2">02h</option>
+        <option value="3">03h</option><option value="4">04h</option><option value="5">05h</option>
+        <option value="6">06h</option><option value="7">07h</option><option value="8">08h</option>
+        <option value="9">09h</option><option value="10">10h</option><option value="11">11h</option>
+        <option value="12">12h</option><option value="13">13h</option><option value="14">14h</option>
+        <option value="15">15h</option><option value="16">16h</option><option value="17">17h</option>
+        <option value="18">18h</option><option value="19">19h</option><option value="20">20h</option>
+        <option value="21">21h</option><option value="22">22h</option><option value="23">23h</option>
+      </select>
+    </div>
+    <!-- Filtro por QR Code scaneado -->
+    <div class="filter-group">
+      <label>📲 QR Code Scaneado</label>
+      <select id="filterQR" onchange="filterData()">
+        <option value="">Todos</option>
+        <option value="1">Scaneou QR 1</option>
+        <option value="2">Scaneou QR 2</option>
+        <option value="3">Scaneou QR 3</option>
+        <option value="any1">Pelo menos 1 scan</option>
+        <option value="any2">Pelo menos 2 scans</option>
+        <option value="complete">Completo (3/3)</option>
+      </select>
+    </div>
+    <!-- Filtro por status -->
+    <div class="filter-group">
+      <label>🏆 Status</label>
+      <select id="filterStatus" onchange="filterData()">
+        <option value="">Todos</option>
+        <option value="winner">Ganhador</option>
+        <option value="partial">Em andamento</option>
+      </select>
+    </div>
+    <!-- Filtro por prêmio retirado -->
+    <div class="filter-group">
+      <label>🎁 Prêmio Retirado</label>
+      <select id="filterPremio" onchange="filterData()">
+        <option value="">Todos</option>
+        <option value="yes">Retirado ✅</option>
+        <option value="no">Pendente ⬜</option>
+      </select>
+    </div>
+    <button class="btn-clear" onclick="clearFilters()">✕ Limpar filtros</button>
+    <div class="filter-count" id="filterCount"></div>
   </div>
 
   <div class="section-header">
@@ -133,10 +279,11 @@
         <th>Status</th>
         <th>Prêmio Retirado</th>
         <th>Data</th>
+        <th>Hora</th>
       </tr>
     </thead>
     <tbody id="tableBody">
-      <tr><td colspan="7" class="empty">Carregando...</td></tr>
+      <tr><td colspan="8" class="empty">Carregando...</td></tr>
     </tbody>
   </table>
 
@@ -149,53 +296,133 @@
     let allData = [];
 
     async function loadData() {
+      const token = sessionStorage.getItem('adminAuth');
+      if (!token) return;
       try {
-        const res = await fetch('/api/admin/participantes');
+        const res = await fetch('/api/admin/participantes', {
+          headers: { 'Authorization': 'Basic ' + token }
+        });
+        if (res.status === 401) {
+          showLogin(true);
+          return;
+        }
         allData = await res.json();
-
-        // Stats (baseado no total de dados, independente do filtro)
-        const winners = allData.filter(d => d.is_winner);
-        const partial = allData.filter(d => !d.is_winner);
-        const retirados = allData.filter(d => d.premio_retirado);
-
-        document.getElementById('totalParticipantes').textContent = allData.length;
-        document.getElementById('totalWinners').textContent = winners.length;
-        document.getElementById('totalPartial').textContent = partial.length;
-        document.getElementById('totalRetirados').textContent = retirados.length;
-
-        // Renderiza aplicando a busca atual
-        filterData();
+        document.getElementById('loginOverlay').style.display = 'none';
+        filterData(); // stats + tabela são atualizados pelo filterData
       } catch (e) {
         console.error(e);
       }
     }
 
+    function clearFilters() {
+      document.getElementById('filterDateFrom').value = '';
+      document.getElementById('filterDateTo').value = '';
+      document.getElementById('filterHourFrom').value = '';
+      document.getElementById('filterHourTo').value = '';
+      document.getElementById('filterQR').value = '';
+      document.getElementById('filterStatus').value = '';
+      document.getElementById('filterPremio').value = '';
+      document.getElementById('searchInput').value = '';
+      filterData();
+    }
+
     function filterData() {
-      const term = document.getElementById('searchInput').value.toLowerCase();
+      const term         = document.getElementById('searchInput').value.toLowerCase();
+      const dateFrom     = document.getElementById('filterDateFrom').value;
+      const dateTo       = document.getElementById('filterDateTo').value;
+      const hourFrom     = document.getElementById('filterHourFrom').value;
+      const hourTo       = document.getElementById('filterHourTo').value;
+      const qrFilter     = document.getElementById('filterQR').value;
+      const statusFilter = document.getElementById('filterStatus').value;
+      const premioFilter = document.getElementById('filterPremio').value;
+
       const tbody = document.getElementById('tableBody');
 
-      const filtered = allData.filter(p => 
-        (p.nome && p.nome.toLowerCase().includes(term)) || 
-        (p.email && p.email.toLowerCase().includes(term)) || 
-        (p.telefone && p.telefone.toLowerCase().includes(term))
-      );
+      const filtered = allData.filter(p => {
+        // ── Busca por texto ──
+        const textMatch =
+          (p.nome     && p.nome.toLowerCase().includes(term)) ||
+          (p.email    && p.email.toLowerCase().includes(term)) ||
+          (p.telefone && p.telefone.toLowerCase().includes(term));
+        if (!textMatch) return false;
+
+        // ── Filtro de data / hora (horário local do browser) ──
+        const dt = new Date(p.created_at + 'Z');
+        // Data local: monta YYYY-MM-DD a partir dos valores locais
+        const yyyy = dt.getFullYear();
+        const mm   = String(dt.getMonth() + 1).padStart(2, '0');
+        const dd   = String(dt.getDate()).padStart(2, '0');
+        const dateStr = `${yyyy}-${mm}-${dd}`;
+        const hour    = dt.getHours(); // hora local (respeita fuso do browser)
+
+        if (dateFrom && dateStr < dateFrom) return false;
+        if (dateTo   && dateStr > dateTo)   return false;
+        if (hourFrom !== '' && hour < parseInt(hourFrom)) return false;
+        if (hourTo   !== '' && hour > parseInt(hourTo))   return false;
+
+        // ── Filtro de QR Code ──
+        const scannedList = p.qrs_scanned
+          ? p.qrs_scanned.split(',').map(x => x.trim())
+          : [];
+        const total = parseInt(p.total_scans) || 0;
+
+        if (qrFilter === '1' && !scannedList.includes('1')) return false;
+        if (qrFilter === '2' && !scannedList.includes('2')) return false;
+        if (qrFilter === '3' && !scannedList.includes('3')) return false;
+        if (qrFilter === 'any1' && total < 1) return false;
+        if (qrFilter === 'any2' && total < 2) return false;
+        if (qrFilter === 'complete' && total < 3) return false;
+
+        // ── Filtro de status ──
+        if (statusFilter === 'winner'  && !p.is_winner) return false;
+        if (statusFilter === 'partial' &&  p.is_winner) return false;
+
+        // ── Filtro de prêmio retirado ──
+        // só aplica se for ganhador; senão ignora
+        if (premioFilter === 'yes' && (!p.is_winner || !p.premio_retirado)) return false;
+        if (premioFilter === 'no'  && (!p.is_winner ||  p.premio_retirado)) return false;
+
+        return true;
+      });
+
+      // ── Stats reativos (sempre baseados no filtered) ──
+      document.getElementById('totalParticipantes').textContent = filtered.length;
+      document.getElementById('totalWinners').textContent     = filtered.filter(d => d.is_winner).length;
+      document.getElementById('totalPartial').textContent      = filtered.filter(d => !d.is_winner).length;
+      document.getElementById('totalRetirados').textContent    = filtered.filter(d => d.premio_retirado).length;
+      document.getElementById('totalQR1').textContent          = filtered.filter(d => d.qrs_scanned && d.qrs_scanned.split(',').map(x=>x.trim()).includes('1')).length;
+      document.getElementById('totalQR2').textContent          = filtered.filter(d => d.qrs_scanned && d.qrs_scanned.split(',').map(x=>x.trim()).includes('2')).length;
+      document.getElementById('totalQR3').textContent          = filtered.filter(d => d.qrs_scanned && d.qrs_scanned.split(',').map(x=>x.trim()).includes('3')).length;
+
+      // Update counter
+      const hasFilters = dateFrom || dateTo || hourFrom || hourTo || qrFilter || statusFilter || premioFilter || term;
+      document.getElementById('filterCount').innerHTML = hasFilters
+        ? `Exibindo <span>${filtered.length}</span> de <span>${allData.length}</span>`
+        : '';
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum participante encontrado.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="empty">Nenhum participante encontrado.</td></tr>';
         return;
       }
 
       tbody.innerHTML = filtered.map(p => {
-        const qrs = p.qrs_scanned ? p.qrs_scanned.split(',').sort().join(', ') : '-';
+        const scannedList = p.qrs_scanned ? p.qrs_scanned.split(',').map(x => x.trim()) : [];
+
+        // QR pill indicators
+        const qrPills = [1, 2, 3].map(n =>
+          `<span class="qr-pill ${scannedList.includes(String(n)) ? '' : 'missing'}">${n}</span>`
+        ).join('');
+
         const status = p.is_winner
-          ? '<span class="badge badge-winner">Ganhador</span>'
+          ? '<span class="badge badge-winner">Ganhador 🏆</span>'
           : `<span class="badge badge-partial">${p.total_scans}/3</span>`;
-        const date = new Date(p.created_at + 'Z').toLocaleString('pt-BR');
+
+        const dt = new Date(p.created_at + 'Z');
+        const dateFormatted = dt.toLocaleDateString('pt-BR');
+        const timeFormatted = dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
         let premioCell = '-';
         if (p.is_winner) {
-          const checked = p.premio_retirado ? 'checked' : '';
-          const label = p.premio_retirado ? '✅ Retirado' : '⬜ Pendente';
           premioCell = `<button
             class="btn-check ${p.premio_retirado ? 'checked' : ''}"
             onclick="togglePremio('${esc(p.email)}', ${p.premio_retirado ? 0 : 1}, this)"
@@ -207,10 +434,11 @@
           <td>${esc(p.nome)}</td>
           <td>${esc(p.email)}</td>
           <td>${esc(p.telefone)}</td>
-          <td>QR ${qrs}</td>
+          <td><div class="qr-pills">${qrPills}</div></td>
           <td>${status}</td>
           <td>${premioCell}</td>
-          <td>${date}</td>
+          <td>${dateFormatted}</td>
+          <td>${timeFormatted}</td>
         </tr>`;
       }).join('');
     }
@@ -229,27 +457,43 @@
       `).join('');
     }
 
-    function exportCSV() {
-      window.location.href = '/api/admin/export';
+    async function exportCSV() {
+      const token = sessionStorage.getItem('adminAuth');
+      try {
+        const res = await fetch('/api/admin/export', {
+          headers: { 'Authorization': 'Basic ' + token }
+        });
+        if (res.status === 401) return showLogin(true);
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'convidados.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch(e) { console.error(e); }
     }
 
     async function togglePremio(email, novoValor, btn) {
+      const token = sessionStorage.getItem('adminAuth');
       btn.disabled = true;
       btn.style.opacity = '0.6';
       try {
         const res = await fetch('/api/admin/premio-retirado', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + token 
+          },
           body: JSON.stringify({ email, retirado: novoValor === 1 })
         });
+        if (res.status === 401) return showLogin(true);
         if (res.ok) {
-          // Update local data and re-render
           const p = allData.find(x => x.email === email);
           if (p) p.premio_retirado = novoValor;
           filterData();
-          // Update stat
-          document.getElementById('totalRetirados').textContent =
-            allData.filter(d => d.premio_retirado).length;
         }
       } catch (e) {
         console.error(e);
@@ -266,10 +510,50 @@
       return d.innerHTML;
     }
 
-    loadData();
-    loadQRCodes();
-    // Auto-refresh every 10s
-    setInterval(loadData, 10000);
+    let refreshInterval;
+
+    function showLogin(isError = false) {
+      sessionStorage.removeItem('adminAuth');
+      document.getElementById('loginOverlay').style.display = 'flex';
+      if (isError) {
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('loginPass').value = '';
+      }
+      if (refreshInterval) clearInterval(refreshInterval);
+    }
+
+    function checkLogin() {
+      if (sessionStorage.getItem('adminAuth')) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        startAdmin();
+      } else {
+        showLogin();
+      }
+    }
+
+    function doLogin() {
+      const u = document.getElementById('loginUser').value;
+      const p = document.getElementById('loginPass').value;
+      const token = btoa(u + ':' + p);
+      sessionStorage.setItem('adminAuth', token);
+      document.getElementById('loginError').style.display = 'none';
+      startAdmin();
+    }
+
+    function startAdmin() {
+      loadData();
+      loadQRCodes();
+      refreshInterval = setInterval(loadData, 10000);
+    }
+
+    document.getElementById('loginPass').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('loginUser').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    checkLogin();
   </script>
 </body>
 </html>
